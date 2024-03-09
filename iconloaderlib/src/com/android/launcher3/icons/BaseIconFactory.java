@@ -8,6 +8,7 @@ import static android.graphics.drawable.AdaptiveIconDrawable.getExtraInsetFracti
 import static com.android.launcher3.icons.BitmapInfo.FLAG_CLONE;
 import static com.android.launcher3.icons.BitmapInfo.FLAG_INSTANT;
 import static com.android.launcher3.icons.BitmapInfo.FLAG_PRIVATE;
+import static com.android.launcher3.icons.BitmapInfo.FLAG_WORK;
 import static com.android.launcher3.icons.ShadowGenerator.BLUR_FACTOR;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
@@ -248,8 +249,12 @@ public class BaseIconFactory implements AutoCloseable {
                 info.setMonoIcon(createIconBitmap(mono, scale[0], MODE_ALPHA), this);
             }
         }
-        if (options != null && options.mUserHandle != null) {
-            info.setUser(options.mUserHandle, this);
+        if (options != null) {
+            final UserHandle user = options.mUserHandle != null ? options.mUserHandle
+                    : (options.mUserIconInfo != null ? options.mUserIconInfo.user : null);
+            if (user != null) {
+                info.setUser(user, this);
+            }
         }
         info = info.withFlags(getBitmapFlagOp(options));
         return info;
@@ -283,6 +288,7 @@ public class BaseIconFactory implements AutoCloseable {
                 info = getUserInfo(options.mUserHandle);
             }
             if (info != null) {
+                op = op.setFlag(FLAG_WORK, info.isWork());
                 op = op.setFlag(FLAG_CLONE, info.isCloned());
                 op = op.setFlag(FLAG_PRIVATE, info.isPrivate());
             }

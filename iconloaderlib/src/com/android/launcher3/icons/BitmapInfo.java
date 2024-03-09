@@ -30,10 +30,12 @@ import com.android.launcher3.util.FlagOp;
 
 public class BitmapInfo {
 
+    static final int FLAG_WORK = 1 << 0;
     static final int FLAG_INSTANT = 1 << 1;
     static final int FLAG_CLONE = 1 << 2;
     static final int FLAG_PRIVATE = 1 << 3;
     @IntDef(flag = true, value = {
+            FLAG_WORK,
             FLAG_INSTANT,
             FLAG_CLONE,
             FLAG_PRIVATE
@@ -193,10 +195,19 @@ public class BitmapInfo {
     public Drawable getBadgeDrawable(Context context, boolean isThemed) {
         if (badgeInfo != null) {
             return badgeInfo.newIcon(context, isThemed ? FLAG_THEMED : 0);
+        } else if (mUserBadge != null) {
+            // We use a copy of the badge, or changes will affect everywhere it is used;
+            // e.g., shortcuts/widget user badges are very small, and these could affect
+            // regular launcher icons, and the other way around.
+            return mUserBadge.getConstantState().newDrawable().mutate();
         } else if ((flags & FLAG_INSTANT) != 0) {
             return context.getDrawable(isThemed
                     ? R.drawable.ic_instant_app_badge_themed
                     : R.drawable.ic_instant_app_badge);
+        } else if ((flags & FLAG_WORK) != 0) {
+            return context.getDrawable(isThemed
+                    ? R.drawable.ic_work_app_badge_themed
+                    : R.drawable.ic_work_app_badge);
         } else if ((flags & FLAG_CLONE) != 0) {
             return context.getDrawable(isThemed
                     ? R.drawable.ic_clone_app_badge_themed
@@ -205,11 +216,6 @@ public class BitmapInfo {
             return context.getDrawable(isThemed
                     ? R.drawable.ic_private_profile_app_badge_themed
                     : R.drawable.ic_private_profile_app_badge);
-        } else if (mUserBadge != null) {
-            // We use a copy of the badge, or changes will affect everywhere it is used;
-            // e.g., shortcuts/widget user badges are very small, and these could affect
-            // regular launcher icons, and the other way around.
-            return mUserBadge.getConstantState().newDrawable().mutate();
         }
         return null;
     }
